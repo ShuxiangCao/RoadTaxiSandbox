@@ -1,11 +1,9 @@
 __author__ = 'coxious'
 
 import shapefile
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+from config import  *
 import pandas as pd
-
-base_path = '/home/coxious/PycharmProjects/Taxi/shapefiles/'
-available  = ['country','downtown','fast_road','highway','national','other','province']
 
 cross_road_dict = {}
 roads_dict = []
@@ -61,7 +59,7 @@ def load_data(file_name,range):
 
         roads_dict.append([points[0][0],points[0][1],points[-1][0],points[-1][1],file_name])
 
-range = get_range('fast_road')
+range = get_range(range_file)
 
 for file in available:
     load_data(file,range)
@@ -69,6 +67,6 @@ print len(cross_road_dict)
 
 df = pd.DataFrame(roads_dict)
 
-df.to_hdf(base_path + "Hangzhou_roads.h5",'Hangzhou')
+df.to_hdf(base_path + hdf_name,table_name)
 
 print df
