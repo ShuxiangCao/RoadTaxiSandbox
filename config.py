@@ -1,5 +1,6 @@
 __author__ = 'coxious'
 
+# Program
 base_path = '/home/coxious/PycharmProjects/Taxi/shapefiles/'
 available  = ['country','downtown','fast_road','highway','national','other','province']
 road_color_dict = {
@@ -18,3 +19,5 @@ table_name = 'Hangzhou'
 
 graph_file_name = 'HangzhouGraph.gpickle'
 graph_tool_file = 'Hangzhou.gt'
+
+#Strategy
