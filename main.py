@@ -3,22 +3,26 @@ __author__ = 'coxious'
 import simulator
 import core
 import time
+from config import *
 
 core.plot_initialize()
 simulator.initialize()
+
 #for time in xrange(24 * 3600):
+
 def timed(f):
-  start = time.time()
   ret = f()
-  elapsed = time.time() - start
   return ret, elapsed
 
-for t in xrange(10):
+for t in xrange(0,200,sec_per_cycle):
+
+    start = time.time()
     #simulator.run_strategy()
     #simulator.update_graph()
-    ret,elapsed = timed(lambda : simulator.run_time_elapse(t))
-    print elapsed
+    core.draw_cycle()
+    simulator.run_time_elapse(t)
+    elapsed = time.time() - start
     hour,minute,sec = simulator.to_human_time(t)
-    print "Current Hour %d\n"%hour
+    print "Current Hour %d elapse %f\n"%(hour,elapsed)
 
-core.plot_window()
+#core.plot_window()

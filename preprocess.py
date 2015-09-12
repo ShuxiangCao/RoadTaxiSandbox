@@ -79,8 +79,8 @@ def convert_to_graph_tool():
     for node in G.nodes_iter():
         v = Graph.add_vertex()
         cop_dict[node] = v
-        x = node[0]
-        y = 500 - node[1]
+        x = node[0] * 5000
+        y = - node[1] * 5000
         vprop_position[Graph.vertex(v)] = (x,y)
 
     for u,v in G.edges_iter():
@@ -90,7 +90,8 @@ def convert_to_graph_tool():
         Graph.add_edge(v1,v2)
 
         eprob_edge_type[Graph.edge(v1,v2)] = G[u][v]['type']
-        eprob_edge_distance[Graph.edge(v1,v2)] = calc_distance(u,v)
+        eprob_edge_distance[Graph.edge(v1,v2)] = calc_distance(u,v) * 5000
+
     Graph.edge_properties['type'] = eprob_edge_type
     Graph.edge_properties['distance'] = eprob_edge_distance
     Graph.vertex_properties['position'] = vprop_position

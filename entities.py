@@ -3,6 +3,7 @@ __author__ = 'coxious'
 from simulator import *
 from core import *
 import math
+import strategy
 
 cross_count = G.num_vertices()
 
@@ -21,13 +22,13 @@ class Taxi(object):
 
         self.accuposition = get_cross_position(position)
 
-        self.speed    = 1 /3.6 /5000 #km /h
+
         self.status   = 'empty'
         self.customer = None
         self.self_vertex = self_vertex
 
-
     def __update_position_one_sec(self):
+
         pos_target = get_cross_position(self.target)
         accuposition = get_cross_position(self.self_vertex)
 
@@ -35,16 +36,25 @@ class Taxi(object):
         dx = ( pos_target[0] - accuposition[0] )
         ds = math.sqrt( dx **2 + dy ** 2)
 
+        if ds == 0:
+            return True
 
-        if ds < self.speed:
+        self.speed = strategy.velocity(G.edge_properties['distance'][self.current_road],
+                road_status_dict[G.edge_index[self.current_road]],
+                G.edge_properties['type'][self.current_road]
+        )/1000  # to km/s
+
+        #print self.speed
+
+        if ds < self.speed * sec_per_cycle:
             self.accuposition = pos_target
             return True
 
-        x = accuposition[0] + self.speed * dx/ds
-        y = accuposition[1] + self.speed * dy/ds
+        x = accuposition[0] + self.speed * sec_per_cycle * dx/ds
+        y = accuposition[1] + self.speed * sec_per_cycle * dy/ds
 
-        #print accuposition,(x,y)
         update_taxi_position(self.self_vertex,(x,y))
+
         return False
 
     def run_time_elapse(self,time):

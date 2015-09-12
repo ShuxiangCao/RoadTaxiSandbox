@@ -2,6 +2,7 @@ __author__ = 'coxious'
 
 # Program
 base_path = '/home/coxious/PycharmProjects/Taxi/shapefiles/'
+frame_path = '/home/coxious/PycharmProjects/Taxi/frames/'
 available  = ['country','downtown','fast_road','highway','national','other','province']
 
 road_color_dict = {
@@ -32,6 +33,10 @@ table_name = 'Hangzhou'
 graph_file_name = 'HangzhouGraph.gpickle'
 graph_tool_file = 'Hangzhou.gt'
 
+resolution = (4800 , 4800)
+
 #Strategy
 
 taxi_amount = 6000
+
+sec_per_cycle = 10
