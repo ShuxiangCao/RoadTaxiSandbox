@@ -41,14 +41,6 @@ def get_random_road_from_position(vertex):
 
     random.shuffle(roads)
 
-    try:
-        a = roads[0]
-    except:
-        print vertex.out_degree()
-        print roads
-        print vertex
-        print vertex.out_edges()
-        print vertex.in_edges()
     return roads[0]
 
 

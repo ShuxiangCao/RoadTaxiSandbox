@@ -8,6 +8,11 @@ cross_count = G.num_vertices()
 
 random_vertex = lambda :G.vertex(random.randint(0,cross_count))
 
+road_status_dict = {}
+
+for edge in G.edges():
+    road_status_dict[G.edge_index[edge]] = 0
+
 class Taxi(object):
     def __init__(self,position,self_vertex):
         self.last_pass_vertex = position
@@ -21,26 +26,22 @@ class Taxi(object):
         self.customer = None
         self.self_vertex = self_vertex
 
+
     def __update_position_one_sec(self):
         pos_target = get_cross_position(self.target)
         accuposition = get_cross_position(self.self_vertex)
 
-        distance = math.sqrt(( pos_target[1] - accuposition[1] )**2 +
-                             ( pos_target[0] - accuposition[0] ) ** 2)
+        dy = ( pos_target[1] - accuposition[1] )
+        dx = ( pos_target[0] - accuposition[0] )
+        ds = math.sqrt( dx **2 + dy ** 2)
 
-        if distance < self.speed:
+
+        if ds < self.speed:
             self.accuposition = pos_target
             return True
 
-        if accuposition[0] == pos_target[0]:
-
-            theta = 0.5 * math.pi * (( pos_target[1] - accuposition[1] ) / abs(( pos_target[1] - accuposition[1] )))
-        else:
-            tan =  ( pos_target[1] - accuposition[1] ) / ( pos_target[0] - accuposition[0] )
-            theta = math.atan(tan)
-
-        x = accuposition[0] + self.speed * math.cos(theta)
-        y = accuposition[1] + self.speed * math.sin(theta)
+        x = accuposition[0] + self.speed * dx/ds
+        y = accuposition[1] + self.speed * dy/ds
 
         #print accuposition,(x,y)
         update_taxi_position(self.self_vertex,(x,y))
@@ -48,12 +49,18 @@ class Taxi(object):
 
     def run_time_elapse(self,time):
         if self.status == 'empty':
-            if self.current_road== None:
-                self.current_road = get_random_road_from_position(self.last_pass_vertex)
+            try:
+                if self.current_road == None:
+                    self.current_road = get_random_road_from_position(self.last_pass_vertex)
+                    road_status_dict[G.edge_index[self.current_road]] += 1
+            except:
+                pass
+
             self.target = get_road_target(self.last_pass_vertex,self.current_road)
 
             if self.__update_position_one_sec():
                 self.last_pass_vertex = get_road_target(self.last_pass_vertex,self.current_road)
+                road_status_dict[G.edge_index[self.current_road]] -= 1
                 self.current_road = None
         pass
 

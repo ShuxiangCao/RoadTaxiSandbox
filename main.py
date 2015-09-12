@@ -13,7 +13,7 @@ def timed(f):
   elapsed = time.time() - start
   return ret, elapsed
 
-for t in xrange(36):
+for t in xrange(10):
     #simulator.run_strategy()
     #simulator.update_graph()
     ret,elapsed = timed(lambda : simulator.run_time_elapse(t))

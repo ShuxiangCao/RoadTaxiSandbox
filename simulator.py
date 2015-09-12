@@ -13,6 +13,9 @@ def initialize():
     global taxies_list
     for i in xrange(taxi_amount):
         pos = random_vertex()
+        while G.vertex_properties['shape'][pos] == 'triangle':
+            pos = random_vertex()
+
         v = add_taxi_vertex(pos)
         taxies_list.append(Taxi(pos,v))
 

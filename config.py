@@ -3,6 +3,7 @@ __author__ = 'coxious'
 # Program
 base_path = '/home/coxious/PycharmProjects/Taxi/shapefiles/'
 available  = ['country','downtown','fast_road','highway','national','other','province']
+
 road_color_dict = {
     'country' : 'black',
     'downtown' : 'darkred',
@@ -12,6 +13,17 @@ road_color_dict = {
     'other' : 'gray',
     'province' : 'orange'
 }
+
+road_speed_dict= {
+    'country' : 60,
+    'downtown' : 60,
+    'fast_road' : 80,
+    'highway' : 100,
+    'national' : 80,
+    'other' : 40,
+    'province' : 60
+}
+
 range_file = 'fast_road'
 
 hdf_name = "Hangzhou_roads.h5"
@@ -22,4 +34,4 @@ graph_tool_file = 'Hangzhou.gt'
 
 #Strategy
 
-taxi_amount = 8900
+taxi_amount = 6000
