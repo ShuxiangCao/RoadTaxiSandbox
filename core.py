@@ -2,9 +2,9 @@ __author__ = 'coxious'
 
 from config import *
 import graph_tool.all as gt
+import random
 
 G = gt.load_graph(base_path + graph_tool_file)
-
 
 def plot_initialize():
     color = G.new_vertex_property('double')
@@ -25,6 +25,8 @@ def add_taxi_vertex(position):
         G.vertex_properties['position'][position]
     G.vertex_properties['shape'][taxi_vertex] = 'triangle'
 
+    return taxi_vertex
+
 
 def update_taxi_position(taxi_vertex, pos):
     G.vertex_properties['position'][taxi_vertex] = pos
@@ -32,6 +34,29 @@ def update_taxi_position(taxi_vertex, pos):
 
 def get_cross_position(vertex):
     return G.vertex_properties['position'][vertex]
+
+
+def get_random_road_from_position(vertex):
+    roads = [e for e in vertex.out_edges()]
+
+    random.shuffle(roads)
+
+    try:
+        a = roads[0]
+    except:
+        print vertex.out_degree()
+        print roads
+        print vertex
+        print vertex.out_edges()
+        print vertex.in_edges()
+    return roads[0]
+
+
+def get_road_target(vertex,road):
+    if road.source() == vertex:
+        return road.target()
+    else:
+        return road.source()
 
 
 def plot_window():

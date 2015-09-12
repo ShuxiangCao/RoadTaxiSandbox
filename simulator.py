@@ -6,14 +6,11 @@ import graph_tool as gt
 from entities import *
 from core import *
 
-cross_count = G.num_vertices()
-
-random_vertex = lambda :G.vertex(random.randint(0,cross_count))
 
 taxies_list = []
 
 def initialize():
-
+    global taxies_list
     for i in xrange(taxi_amount):
         pos = random_vertex()
         v = add_taxi_vertex(pos)
@@ -29,6 +26,7 @@ def update_graph():
     pass
 
 def run_time_elapse(time):
+    global taxies_list
     for taxi in taxies_list:
         taxi.run_time_elapse(time)
 

@@ -1,10 +1,24 @@
 __author__ = 'coxious'
 
 import simulator
+import core
+import time
 
-for time in xrange(24 * 3600):
-    simulator.run_strategy()
-    simulator.update_graph()
-    simulator.run_time_elapse(time)
-    hour,minute,sec = simulator.to_human_time(time)
+core.plot_initialize()
+simulator.initialize()
+#for time in xrange(24 * 3600):
+def timed(f):
+  start = time.time()
+  ret = f()
+  elapsed = time.time() - start
+  return ret, elapsed
+
+for t in xrange(36):
+    #simulator.run_strategy()
+    #simulator.update_graph()
+    ret,elapsed = timed(lambda : simulator.run_time_elapse(t))
+    print elapsed
+    hour,minute,sec = simulator.to_human_time(t)
     print "Current Hour %d\n"%hour
+
+core.plot_window()
