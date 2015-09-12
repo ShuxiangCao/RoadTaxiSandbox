@@ -21,3 +21,5 @@ graph_file_name = 'HangzhouGraph.gpickle'
 graph_tool_file = 'Hangzhou.gt'
 
 #Strategy
+
+taxi_amount = 8900

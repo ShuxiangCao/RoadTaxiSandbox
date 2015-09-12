@@ -80,7 +80,7 @@ def convert_to_graph_tool():
         v = Graph.add_vertex()
         cop_dict[node] = v
         x = node[0]
-        y = - node[1]
+        y = 500 - node[1]
         vprop_position[Graph.vertex(v)] = (x,y)
 
     for u,v in G.edges_iter():
