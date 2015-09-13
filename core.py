@@ -20,13 +20,12 @@ count = 0
 core_lock = threading.Lock()
 
 def core_atomic_routine(f):
-   # def func(*args, **kwargs):
-   #     core_lock.acquire()
-   #     val = f(*args, **kwargs)
-   #     core_lock.release()
-   #     return val
-   # return func
-   return f
+    def func(*args, **kwargs):
+        core_lock.acquire()
+        val = f(*args, **kwargs)
+        core_lock.release()
+        return val
+    return func
 
 @core_atomic_routine
 def plot_initialize():

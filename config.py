@@ -40,7 +40,7 @@ sec_per_cycle = 15
 
 #Strateg
 # y
-taxi_amount = 8000
+taxi_amount = 4000
 new_customer_per_cycle = 30
 
 price_per_distance = 2.5
@@ -48,4 +48,9 @@ price_per_second = 36. /3600
 oil_cost_per_second = 38.4 /3600
 start_price = 4.5
 
-max_customer_distance = 40
+max_customer_distance = 60
+max_road_recursive = 15
+
+target_full_rate = 0.3
+
+simulation_time = 7200

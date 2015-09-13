@@ -8,10 +8,20 @@ import graph_tool as gt
 import numpy as np
 import entities
 
+def get_current_new_customer_num(time):
+    new_customer = 0
+
+    if time < 2700:
+        lamb = 2*2700 **2
+    else:
+        lamb = 2*4500**2
+
+    return int(2 * math.exp( - (time - 2700)**2/lamb) * sec_per_cycle /2)
+
 def velocity(road_distance,car_count,road_type,t):
 
     jamming_density = 135
-    magnify_times =  120
+    magnify_times =  240
     density = float(car_count) * magnify_times / road_distance
     max_vel = road_speed_dict[road_type]
 

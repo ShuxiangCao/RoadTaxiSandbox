@@ -5,6 +5,7 @@ from core import *
 import math
 import strategy
 import numpy as np
+import time
 
 cross_count = G.num_vertices()
 
@@ -33,8 +34,11 @@ dict_overview = {
     'no_response_rate' : 0.,
     'averange_speed':0.,
     'on_trip_count':0.,
-    'finished_count':0.
+    'finished_count':0.,
+    'average_waiting_time':0.
 }
+
+data_frames = {}
 
 data_point_customer = pd.DataFrame()
 data_road_density   = pd.DataFrame()
@@ -59,12 +63,34 @@ def get_random_station_pos():
 
 def statistics():
 
+    def update_taxies():
+        for taxi in taxies_list:
+            id = G.vertex_index[taxi.self_vertex]
+            data_frames['taxi%d'%id] = data_frames['taxi%d'%id].\
+                append(pd.Series(taxi.get_dynamic_attributes()),ignore_index = True)
+
+    def update_customers():
+        for customer in active_customer_list:
+            id = G.vertex_index[customer.self_vertex]
+            data_frames['customer%d'%id] = data_frames['customer%d'%id].\
+                append(pd.Series(customer.get_dynamic_attributes()),ignore_index = True)
+
     def get_free_rate():
         free_taxi_count = 0
         for taxi in taxies_list:
             if taxi.status == 'empty':
                 free_taxi_count += 1.
         return free_taxi_count,free_taxi_count / len(taxies_list)
+
+    def get_average_waiting_time():
+        waiting_time_sum = 0
+        trip_customers_count = 1
+        for customer in active_customer_list:
+            if customer.status == 'OnTrip':
+                trip_customers_count += 1
+                waiting_time_sum += (customer.end_waiting - customer.start_waiting)
+
+        return waiting_time_sum/trip_customers_count
 
     def get_waiting_customers():
         waiting_customers_count = 0
@@ -87,6 +113,13 @@ def statistics():
     dict_overview['on_trip_count'] = on_trip_count
     dict_overview['finished_count'] = finished_count
 
+    dict_overview['average_waiting_time'] = get_average_waiting_time()
+
+    #time_update = time.time()
+    #update_customers()
+    #update_taxies()
+    #print "update all data cost %f\n",time.time()-time_update
+
     global  data_overview
     serie = pd.Series(dict_overview)
     data_overview = data_overview.append(serie,ignore_index=True)
@@ -94,7 +127,28 @@ def statistics():
     print serie
 
 def save_data():
-    data_overview.to_csv(base_path + 'overview.csv')
+
+    data_overview.to_csv(frame_path + 'overview.csv')
+    #for key,val in data_frames.iteritems():
+    #    val.to_csv(frame_path + key)
+    data_road_density.to_csv(frame_path + 'road_density.csv')
+
+    taxi_static = None
+    for taxi in taxies_list:
+        data = taxi.get_static_attributes()
+        if type(taxi_static) == type(None):
+            taxi_static = pd.DataFrame(columns=data.keys())
+        taxi_static.append(pd.Series(data),ignore_index = True)
+
+    customer_static = None
+    for customer in active_customer_list:
+        data = customer.get_static_attributes()
+        if type(customer_static) == type(None):
+            customer_static = pd.DataFrame(columns=data.keys())
+        customer_static.append(pd.Series(data),ignore_index = True)
+
+    taxi_static.to_csv(frame_path + 'taxi_static.csv')
+    customer_static.to_csv(frame_path + 'customer_static.csv')
 
 def get_road_current_speed(road):
     if not road:
@@ -121,10 +175,25 @@ class Taxi(object):
         self.customer = None
         self.self_vertex = self_vertex
 
+        self.finished_times = 0
         self.requested_times= 1
         self.declined_times = 0
         #print 'init~~~~~',self_vertex
         self.path = ([],[])
+
+    def get_static_attributes(self):
+        return {'w':self.w,'id' :G.vertex_index[self.self_vertex]}
+
+    def get_dynamic_attributes(self):
+        return {
+            'id' :G.vertex_index[self.self_vertex],
+            'position' : get_cross_position(self.self_vertex),
+            'status' : self.status,
+            'requested_times':self.requested_times,
+            'declined_times':self.declined_times,
+            'velocity' : get_road_current_speed(self.current_road),
+            'finished_times':self.finished_times
+        }
 
     def __update_position_one_sec(self,t):
 
@@ -186,6 +255,7 @@ class Taxi(object):
                     self.status = 'empty'
                     change_taxi_color(self.self_vertex,True)
                     self.customer.set_finish()
+                    self.finished_times += 1
 
     def inform_new_customer(self,customer):
         if self.status == 'empty' and strategy.take_or_not(self,customer):
@@ -218,20 +288,27 @@ class Customer(object):
         self.start_position = position
         point_customer_dict[G.vertex_index[self.start_position]].append(self)
 
-        while(True):
+        def get_distance(s,e):
+            pos_source = G.vertex_properties['position'][s]
+            pos_target = G.vertex_properties['position'][e]
+            return math.sqrt((pos_source[0] - pos_target[0])**2 + (pos_source[1] - pos_target[1])**2)
 
-            self.target = get_random_station_pos()
+        available_v = []
 
-            #customer_trip_distance =\
-            #    gt.shortest_distance(G_no_moving,self.start_position,self.target ,G.edge_properties['distance'])
+        def recursive_add_vertex(vertex,deep_remain):
+            if deep_remain == 0:
+                return
+            for v in vertex.out_neighbours():
+                if v not in available_v:
+                    available_v.append(v)
+                    recursive_add_vertex(v,deep_remain-1)
 
-            pos_source = G.vertex_properties['position'][self.start_position]
-            pos_target = G.vertex_properties['position'][self.target]
+        recursive_add_vertex(self.start_position,max_road_recursive)
 
-            distance = math.sqrt((pos_source[0] - pos_target[0])**2 + (pos_source[1] - pos_target[1])**2)
+        available_v = set(available_v)
+        available_v.remove(self.start_position)
 
-            if distance < max_customer_distance and self.target != self.start_position:
-                break
+        self.target = available_v.pop()
 
         self.path = \
             gt.shortest_path(G_no_moving,self.start_position,self.target ,G.edge_properties['distance'])
@@ -242,6 +319,28 @@ class Customer(object):
         self.make_call()
         self.start_waiting = 0
         self.end_waiting = 0
+        self.end_trip = 0
+
+    def get_static_attributes(self):
+        return {
+            'id':G.vertex_index[self.self_vertex],
+            'start_pos':G.vertex_index[self.start_position],
+            'end_pos' :G.vertex_index[self.target]
+        }
+
+    def get_dynamic_attributes(self):
+        taxi = None
+        if self.taxi != None:
+            taxi = G.vertex_index[self.taxi.self_vertex]
+        return {
+            'id':G.vertex_index[self.self_vertex],
+            'taxi' : taxi ,
+            'status' : self.status,
+            'start_time':self.start_waiting,
+            'start_waiting_time':self.end_waiting,
+            'trip_end_time' : self.end_trip,
+            'finihed':self.status == 'Finished'
+        }
 
     def make_call(self):
         global  total_request
@@ -258,10 +357,11 @@ class Customer(object):
     def set_waiting(self,taxi):
         self.taxi = taxi
         self.status = "Waiting"
-        self.start_waiting = 0
+        self.start_waiting = current_time
 
     def set_on_trip(self):
         self.status = "OnTrip"
+        self.end_waiting = current_time
 
         global  on_trip_count
         on_trip_count += 1
@@ -275,7 +375,7 @@ class Customer(object):
         finished_count += 1
         on_trip_count -= 1
         self.status = "Finish"
-        self.end_waiting = 0
+        self.end_trip = current_time
 
 class CustomerDispather(gt.BFSVisitor):
     def __init__(self,customer):
