@@ -3,54 +3,85 @@ __author__ = 'coxious'
 from config import *
 import graph_tool.all as gt
 import random
-from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
+import threading
 
 G = gt.load_graph(base_path + graph_tool_file)
 
-offscreen = False
+G_no_moving = None
 
-
+inactive_vertex = []
 count = 0
-win = None
 
+core_lock = threading.Lock()
 
+def core_atomic_routine(f):
+   # def func(*args, **kwargs):
+   #     core_lock.acquire()
+   #     val = f(*args, **kwargs)
+   #     core_lock.release()
+   #     return val
+   # return func
+   return f
+
+@core_atomic_routine
 def plot_initialize():
-    color = G.new_vertex_property('double')
+    color = G.new_vertex_property('vector<double>')
     shape = G.new_vertex_property('string')
+    alive = G.new_vertex_property('bool')
 
     for v in G.vertices():
-        color[v] = 0.6
+        color[v] = [254./255,238./255,107./255,1]
         shape[v] = 'circle'
+        alive[v] = True
 
     G.vertex_properties['fillcolor'] = color
     G.vertex_properties['shape'] = shape
+    G.vertex_properties['alive'] = alive
 
-#    global win
-#    win = Gtk.OffscreenWindow()
-#    win.set_default_size(1920, 1080)
-#    win.graph = gt.GraphWidget(G, G.vertex_properties['position'],
-#                  vertex_shape=G.vertex_properties['shape'],
-#                  vertex_fill_color=G.vertex_properties['fillcolor'],
-#                  )
-#    win.add(win.graph)
-#    win.connect("delete_event", Gtk.main_quit)
-#    win.show_all()
+    global  G_no_moving
+    G_no_moving = gt.GraphView(G,vfilt=lambda v: G.vertex_properties['shape'] == 'circle')
+@core_atomic_routine
+def add_inactive_vertex(vertex):
+    G.vertex_properties['alive'][vertex] = False
 
+@core_atomic_routine
+def add_customer_vertex(position):
+
+    customer_vertex = G.add_vertex()
+    G.vertex_properties['fillcolor'][customer_vertex] = [182./255,65./255,69./255,1]
+    G.vertex_properties['position'][customer_vertex] =\
+        G.vertex_properties['position'][position]
+    G.vertex_properties['shape'][customer_vertex] = 'square'
+    G.vertex_properties['alive'][customer_vertex] = True
+
+    return customer_vertex
+
+@core_atomic_routine
 def add_taxi_vertex(position):
     taxi_vertex = G.add_vertex()
-    G.vertex_properties['fillcolor'][taxi_vertex] = 0.3
+    #change_taxi_color(taxi_vertex,True)
+    G.vertex_properties['fillcolor'][taxi_vertex] = [182./255,222./255,110./255,1]
     G.vertex_properties['position'][taxi_vertex] =\
         G.vertex_properties['position'][position]
     G.vertex_properties['shape'][taxi_vertex] = 'triangle'
+    G.vertex_properties['alive'][taxi_vertex] = True
 
     return taxi_vertex
 
+@core_atomic_routine
+def change_taxi_color(taxi_vertex,is_empty):
+    if is_empty:
+        G.vertex_properties['fillcolor'][taxi_vertex] = [182./255,222./255,110./255,1]
+    else:
+        G.vertex_properties['fillcolor'][taxi_vertex] = [182./255,65./255,69./255,1]
 
+@core_atomic_routine
 def update_taxi_position(taxi_vertex, pos):
     G.vertex_properties['position'][taxi_vertex] = pos
 
 
 def get_cross_position(vertex):
+    #print vertex
     return G.vertex_properties['position'][vertex]
 
 
@@ -86,8 +117,9 @@ def plot_window():
 #    count += 1
 
 def draw_cycle():
-     global  count
-     gt.graph_draw(G, G.vertex_properties['position'],
+     global count
+     U = gt.GraphView(G,vfilt=lambda v: G.vertex_properties['alive'][v])
+     gt.graph_draw(U, G.vertex_properties['position'],
                   vertex_shape=G.vertex_properties['shape'],
                   vertex_fill_color=G.vertex_properties['fillcolor'],
                   output=frame_path + 'taxi%06d.png'%count,bg_color=(1,1,1,1),output_size=resolution)
