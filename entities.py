@@ -35,7 +35,8 @@ dict_overview = {
     'averange_speed':0.,
     'on_trip_count':0.,
     'finished_count':0.,
-    'average_waiting_time':0.
+    'average_waiting_time':0.,
+    'money_spent':0.
 }
 
 data_frames = {}
@@ -90,7 +91,7 @@ def statistics():
                 trip_customers_count += 1
                 waiting_time_sum += (customer.end_waiting - customer.start_waiting)
 
-        return waiting_time_sum/trip_customers_count
+        return 1. * waiting_time_sum/trip_customers_count
 
     def get_waiting_customers():
         waiting_customers_count = 0
@@ -106,7 +107,7 @@ def statistics():
     dict_overview['lowest_decline_rate'] = np.min([1. * x.declined_times / x.requested_times for x in taxies_list])
     dict_overview['total_call'] = total_request
     dict_overview['no_response_call'] = no_response_request
-    dict_overview['no_response_rate'] = no_response_request / total_request
+    dict_overview['no_response_rate'] = 1. * no_response_request / total_request
 
     dict_overview['averange_speed'] = np.average([get_road_current_speed(x.current_road) for x in taxies_list ]) * 3.6
 
@@ -114,6 +115,7 @@ def statistics():
     dict_overview['finished_count'] = finished_count
 
     dict_overview['average_waiting_time'] = get_average_waiting_time()
+    dict_overview['money_spent'] = strategy.money_spend
 
     #time_update = time.time()
     #update_customers()
@@ -277,7 +279,7 @@ class Taxi(object):
 
         self.requested_times += 1
 
-        if self.status != 'empty':
+        if self.status == 'empty':
             self.declined_times += 1
 
         return False
@@ -295,6 +297,7 @@ class Customer(object):
 
         available_v = []
 
+        stime = time.time()
         def recursive_add_vertex(vertex,deep_remain):
             if deep_remain == 0:
                 return
@@ -305,9 +308,12 @@ class Customer(object):
 
         recursive_add_vertex(self.start_position,max_road_recursive)
 
+        #print 'recursive used %f\n'%(time.time() - stime)
+
         available_v = set(available_v)
         available_v.remove(self.start_position)
 
+        #self.target = get_random_station_pos()
         self.target = available_v.pop()
 
         self.path = \
@@ -316,7 +322,9 @@ class Customer(object):
         self.taxi = None
         self.self_vertex = self_vertex
 
+        stime = time.time()
         self.make_call()
+        #print 'make call %f\n'%(time.time() - stime)
         self.start_waiting = 0
         self.end_waiting = 0
         self.end_trip = 0
@@ -380,14 +388,21 @@ class Customer(object):
 class CustomerDispather(gt.BFSVisitor):
     def __init__(self,customer):
         self.customer = customer
+        self.visited = 0
 
     def examine_edge(self, e):
+
         taxi_on_road = road_taxi_dict[G.edge_index[e]]
 
-        entities_lock.acquire()
+        #entities_lock.acquire()
         for taxi in taxi_on_road:
-            if taxi.inform_new_customer(self.customer):
-                entities_lock.release()
-                raise gt.StopSearch
+            if taxi.status == 'empty':
+                self.visited = self.visited + 1
+                if taxi.inform_new_customer(self.customer):
+        #            entities_lock.release()
+                    raise gt.StopSearch
 
-        entities_lock.release()
+                if self.visited > bfs_max_search:
+                    raise gt.StopSearch
+        #entities_lock.release()
+

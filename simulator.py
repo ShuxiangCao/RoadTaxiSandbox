@@ -113,6 +113,7 @@ def run_time_elapse(t):
     global taxies_list
 
     global current_time
+    entities.current_time = t
     current_time = t
 
     start = time.time()

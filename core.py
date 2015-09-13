@@ -19,6 +19,9 @@ count = 0
 
 core_lock = threading.Lock()
 
+#for road in G.edges():
+#    print G.edge_properties['distance'][road]
+
 def core_atomic_routine(f):
     def func(*args, **kwargs):
         core_lock.acquire()

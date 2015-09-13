@@ -2,6 +2,7 @@ __author__ = 'coxious'
 
 # Program
 base_path = '/home/coxious/PycharmProjects/Taxi/shapefiles/'
+csv_path = '/home/coxious/PycharmProjects/Taxi/csv/'
 frame_path = '/home/coxious/PycharmProjects/Taxi/frames/'
 available  = ['country','downtown','fast_road','highway','national','other','province']
 
@@ -53,4 +54,6 @@ max_road_recursive = 15
 
 target_full_rate = 0.3
 
-simulation_time = 7200
+simulation_time = 7200 * 2
+
+bfs_max_search = 200
