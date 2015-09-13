@@ -6,6 +6,7 @@ import random
 import threading
 import pandas as pd
 import entities
+import multiprocessing
 
 G = gt.load_graph(base_path + graph_tool_file)
 
@@ -122,12 +123,20 @@ def plot_window():
 def draw_cycle():
     global count
     global  taxi_data
+
     series = pd.Series(entities.road_status_dict)
     taxi_data = taxi_data.append(series,ignore_index=True)
 
-    U = gt.GraphView(G,vfilt=lambda v: G.vertex_properties['alive'][v])
-    gt.graph_draw(U, G.vertex_properties['position'],
-                 vertex_shape=G.vertex_properties['shape'],
-                 vertex_fill_color=G.vertex_properties['fillcolor'],
+    def worker(Graph,current_count):
+
+        U = gt.GraphView(Graph,vfilt=lambda v: Graph.vertex_properties['alive'][v])
+
+        gt.graph_draw(U, U.vertex_properties['position'],
+                 vertex_shape=U.vertex_properties['shape'],
+                 vertex_fill_color=U.vertex_properties['fillcolor'],
                  output=frame_path + 'taxi%06d.png'%count,bg_color=(1,1,1,1),output_size=resolution)
+
+    process = multiprocessing.Process(target=worker,args=(G.copy(),count))
+    process.start()
+
     count += 1

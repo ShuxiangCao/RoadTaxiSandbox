@@ -11,11 +11,6 @@ import time
 import numpy as np
 import pandas as pd
 
-active_customer_list = []
-taxies_list = []
-
-current_time = 0
-
 
 def sync_par_list_run(f,list,thread_count):
     threads = []
@@ -105,6 +100,8 @@ def run_time_elapse(t):
 
     customer_end = time.time()
     print 'Customer %f Taxi %f'%(customer_end - taxi_end,taxi_end - start)
+
+    entities.statistics()
 
 if __name__ == '__main__':
     def test(i):

@@ -11,7 +11,7 @@ simulator.initialize()
 
 #for time in xrange(24 * 3600):
 
-for t in xrange(0,2000,sec_per_cycle):
+for t in xrange(0,7200,sec_per_cycle):
 
     start = time.time()
     #simulator.run_strategy()
@@ -24,4 +24,5 @@ for t in xrange(0,2000,sec_per_cycle):
     print "Cycle %d Draw %f calc %f\n"%(core.count,draw_finish-start,calc)
 
 #core.plot_window()
-print entities.taxi_data
+entities.save_data()
+#print entities.taxi_data

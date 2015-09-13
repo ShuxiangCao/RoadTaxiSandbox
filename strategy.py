@@ -10,9 +10,8 @@ import entities
 
 def velocity(road_distance,car_count,road_type,t):
 
-    #return 1000
     jamming_density = 135
-    magnify_times =  8
+    magnify_times =  120
     density = float(car_count) * magnify_times / road_distance
     max_vel = road_speed_dict[road_type]
 
@@ -75,9 +74,9 @@ def take_or_not(taxi,customer):
     v = road_speed_around_taxi
     v_max = road_speed_max_around_taxi
     lamb = 0.7
-    x = point_customer_dict[taxi.last_pass_vertex]
+    x = len(entities.point_customer_dict[taxi.last_pass_vertex])
 
-    profit_value = (-math.exp(-lamb * x) + 1)(get_profit(d_t,d_c,v) + get_total_oil_cost(d_t,d_c,v)) / \
+    profit_value = (-math.exp(-lamb * x) + 1)*(get_profit(d_t,d_c,v) + get_total_oil_cost(d_t,d_c,v)) / \
                    (get_profit(d_t,d_c,v_max) + get_total_oil_cost(d_t,d_c,v))
 
     confort_value = 1/math.sqrt(60) * math.sqrt(v)
