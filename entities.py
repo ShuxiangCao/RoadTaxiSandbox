@@ -19,10 +19,14 @@ def get_random_station_pos():
 
 road_status_dict = {}
 road_taxi_dict = {}
+point_customer_dict = {}
 
 for edge in G.edges():
     road_status_dict[G.edge_index[edge]] = 0
     road_taxi_dict[G.edge_index[edge]] = []
+
+for vertex in G.vertices():
+    point_customer_dict[G.vertex_index[vertex]] = []
 
 def get_road_current_speed(road):
     global  current_time
@@ -137,6 +141,7 @@ class Customer(object):
         self.status = "Calling"
         self.target = get_random_station_pos()
         self.start_position = position
+        point_customer_dict[G.vertex_index[self.start_position]].append(self)
         self.path = \
             gt.shortest_path(G_no_moving,self.start_position,self.target ,G.edge_properties['distance'])
         self.taxi = None
@@ -152,6 +157,7 @@ class Customer(object):
     def set_on_trip(self):
         self.status = "OnTrip"
         add_inactive_vertex(self.self_vertex)
+        point_customer_dict[G.vertex_index[self.start_position]].remove(self)
 
     def set_finish(self):
         self.status = "Finish"

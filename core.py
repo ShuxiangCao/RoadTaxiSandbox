@@ -4,10 +4,14 @@ from config import *
 import graph_tool.all as gt
 import random
 import threading
+import pandas as pd
+import entities
 
 G = gt.load_graph(base_path + graph_tool_file)
 
-G_no_moving = None
+taxi_data = pd.DataFrame()
+
+G_no_moving = G
 
 inactive_vertex = []
 count = 0
@@ -110,17 +114,20 @@ def plot_window():
 #    win.graph.regenerate_surface()
 #    win.graph.queue_draw()
 #    global  count
-#
 #    # if doing an offscreen animation, dump frame to disk
 #    pixbuf = win.get_pixbuf()
 #    pixbuf.savev(r'./frames/taxi%06d.png' % count, 'png', [], [])
 #    count += 1
 
 def draw_cycle():
-     global count
-     U = gt.GraphView(G,vfilt=lambda v: G.vertex_properties['alive'][v])
-     gt.graph_draw(U, G.vertex_properties['position'],
-                  vertex_shape=G.vertex_properties['shape'],
-                  vertex_fill_color=G.vertex_properties['fillcolor'],
-                  output=frame_path + 'taxi%06d.png'%count,bg_color=(1,1,1,1),output_size=resolution)
-     count += 1
+    global count
+    global  taxi_data
+    series = pd.Series(entities.road_status_dict)
+    taxi_data = taxi_data.append(series,ignore_index=True)
+
+    U = gt.GraphView(G,vfilt=lambda v: G.vertex_properties['alive'][v])
+    gt.graph_draw(U, G.vertex_properties['position'],
+                 vertex_shape=G.vertex_properties['shape'],
+                 vertex_fill_color=G.vertex_properties['fillcolor'],
+                 output=frame_path + 'taxi%06d.png'%count,bg_color=(1,1,1,1),output_size=resolution)
+    count += 1

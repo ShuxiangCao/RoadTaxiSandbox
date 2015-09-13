@@ -3,6 +3,7 @@ __author__ = 'coxious'
 import simulator
 import core
 import time
+import entities
 from config import *
 
 core.plot_initialize()
@@ -23,3 +24,4 @@ for t in xrange(0,2000,sec_per_cycle):
     print "Cycle %d Draw %f calc %f\n"%(core.count,draw_finish-start,calc)
 
 #core.plot_window()
+print entities.taxi_data

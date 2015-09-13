@@ -9,6 +9,7 @@ from multiprocessing import Process
 from multiprocessing.dummy import Pool as ThreadPool
 import time
 import numpy as np
+import pandas as pd
 
 active_customer_list = []
 taxies_list = []
@@ -76,9 +77,6 @@ def to_human_time(time):
     second = time - 3600 * hour - 60 * minute
     return hour,minute,second
 
-def update_graph():
-    pass
-
 def run_taxi_test(i):
     taxies_list[i].run_time_elapse(0)
 
@@ -107,9 +105,6 @@ def run_time_elapse(t):
 
     customer_end = time.time()
     print 'Customer %f Taxi %f'%(customer_end - taxi_end,taxi_end - start)
-
-def run_strategy():
-    pass
 
 if __name__ == '__main__':
     def test(i):
