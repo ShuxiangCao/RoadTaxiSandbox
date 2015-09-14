@@ -6,7 +6,11 @@ This project modeled real Hangzhou city road map as a network and manipulate the
 
 Map generation scripts are also included in this project.
 
-Required packages : graph_tool、pandas、numpy、networkx、matplotlib、pyshp
+Required packages : `graph_tool`、`pandas`、`numpy`、`networkx`、`matplotlib`、`pyshp`
 
 Simulation results :
+
+![sample_png](https://raw.githubusercontent.com/Coxious/RoadTaxiSandbox/master/csv/taxi000423.png)
+
+![no_response_rate](https://raw.githubusercontent.com/Coxious/RoadTaxiSandbox/master/csv/no_response_rate.png)
 
